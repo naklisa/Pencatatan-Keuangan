@@ -8,9 +8,12 @@ export async function middleware(request: NextRequest) {
     },
   });
 
+  const urlEnv = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+  const keyEnv = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    urlEnv,
+    keyEnv,
     {
       cookies: {
         get(name: string) {
