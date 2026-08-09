@@ -131,27 +131,28 @@ export default function ReportsPage() {
     .map(([day, data]) => ({ day: Number(day), ...data }));
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-24 md:pb-8">
       {/* Header & Month Selector */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-3">
-            <BarChart3 className="w-8 h-8 text-emerald-400" /> Laporan & Statistik Keuangan
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-2">
+            <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-400 shrink-0" />
+            <span>Laporan Keuangan</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">Analisis arus kas harian dan rincian pengeluaran per kategori.</p>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Analisis arus kas harian dan rincian pengeluaran.</p>
         </div>
 
         {/* Month Picker Controls */}
-        <div className="flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-2xl p-2 shadow-xl">
+        <div className="flex items-center justify-between sm:justify-end gap-2 bg-slate-900 border border-slate-800 rounded-2xl p-1.5 sm:p-2 shadow-xl w-full sm:w-auto">
           <button
             onClick={handlePrevMonth}
             className="p-2 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl transition"
             title="Bulan Sebelumnya"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
-          <div className="flex items-center gap-2 px-3 font-bold text-white text-base">
-            <Calendar className="w-4 h-4 text-emerald-400" />
+          <div className="flex items-center gap-2 px-2 sm:px-3 font-bold text-white text-xs sm:text-base">
+            <Calendar className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{monthName}</span>
           </div>
           <button
@@ -159,71 +160,71 @@ export default function ReportsPage() {
             className="p-2 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl transition"
             title="Bulan Selanjutnya"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-24">
-          <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
+          <Loader2 className="w-9 h-9 text-emerald-500 animate-spin" />
         </div>
       ) : (
         <>
           {/* Monthly Ringkasan Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-slate-900/80 border border-emerald-500/20 rounded-2xl p-6 shadow-xl space-y-2 relative overflow-hidden group hover:border-emerald-500/40 transition">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="bg-slate-900/80 border border-emerald-500/20 rounded-2xl p-4 sm:p-6 shadow-xl space-y-2 relative overflow-hidden group hover:border-emerald-500/40 transition">
               <div className="flex items-center justify-between text-emerald-400">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Pemasukan</span>
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Total Pemasukan</span>
                 <div className="p-2 bg-emerald-500/10 rounded-xl">
-                  <TrendingUp className="w-5 h-5" />
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
-              <h2 className="text-3xl font-black text-emerald-400">{formatRupiah(totalIncome)}</h2>
-              <p className="text-xs text-slate-400 pt-1">Total uang masuk di {monthName}</p>
+              <h2 className="text-2xl sm:text-3xl font-black text-emerald-400 break-words">{formatRupiah(totalIncome)}</h2>
+              <p className="text-[11px] sm:text-xs text-slate-400 pt-0.5">Total uang masuk di {monthName}</p>
             </div>
 
-            <div className="bg-slate-900/80 border border-rose-500/20 rounded-2xl p-6 shadow-xl space-y-2 relative overflow-hidden group hover:border-rose-500/40 transition">
+            <div className="bg-slate-900/80 border border-rose-500/20 rounded-2xl p-4 sm:p-6 shadow-xl space-y-2 relative overflow-hidden group hover:border-rose-500/40 transition">
               <div className="flex items-center justify-between text-rose-400">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Pengeluaran</span>
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Total Pengeluaran</span>
                 <div className="p-2 bg-rose-500/10 rounded-xl">
-                  <TrendingDown className="w-5 h-5" />
+                  <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
-              <h2 className="text-3xl font-black text-rose-400">{formatRupiah(totalExpense)}</h2>
-              <p className="text-xs text-slate-400 pt-1">Total uang keluar di {monthName}</p>
+              <h2 className="text-2xl sm:text-3xl font-black text-rose-400 break-words">{formatRupiah(totalExpense)}</h2>
+              <p className="text-[11px] sm:text-xs text-slate-400 pt-0.5">Total uang keluar di {monthName}</p>
             </div>
 
-            <div className="bg-slate-900/80 border border-blue-500/20 rounded-2xl p-6 shadow-xl space-y-2 relative overflow-hidden group hover:border-blue-500/40 transition">
+            <div className="bg-slate-900/80 border border-blue-500/20 rounded-2xl p-4 sm:p-6 shadow-xl space-y-2 relative overflow-hidden group hover:border-blue-500/40 transition">
               <div className="flex items-center justify-between text-blue-400">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Net Cashflow</span>
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Net Cashflow</span>
                 <div className="p-2 bg-blue-500/10 rounded-xl">
-                  <WalletIcon className="w-5 h-5" />
+                  <WalletIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
-              <h2 className={`text-3xl font-black ${netCashflow >= 0 ? 'text-blue-400' : 'text-rose-400'}`}>
+              <h2 className={`text-2xl sm:text-3xl font-black break-words ${netCashflow >= 0 ? 'text-blue-400' : 'text-rose-400'}`}>
                 {formatRupiah(netCashflow)}
               </h2>
-              <p className="text-xs text-slate-400 pt-1">Selisih arus kas periode ini</p>
+              <p className="text-[11px] sm:text-xs text-slate-400 pt-0.5">Selisih arus kas periode ini</p>
             </div>
           </div>
 
           {/* Section: Grafik Pengeluaran per Kategori + Legenda */}
-          <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2.5">
-                <PieChart className="w-6 h-6 text-purple-400" />
-                Pengeluaran Berdasarkan Kategori
+          <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3.5">
+              <h3 className="text-base sm:text-xl font-bold text-white flex items-center gap-2">
+                <PieChart className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400 shrink-0" />
+                <span>Pengeluaran Kategori</span>
               </h3>
-              <span className="text-xs text-slate-400">Legenda & Persentase</span>
+              <span className="text-[11px] sm:text-xs text-slate-400">Legenda & %</span>
             </div>
 
             {categoryList.length === 0 ? (
-              <p className="text-slate-500 text-sm text-center py-8">Belum ada data pengeluaran pada bulan ini.</p>
+              <p className="text-slate-500 text-sm text-center py-6">Belum ada data pengeluaran pada bulan ini.</p>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-5">
                 {/* Visual Progress Bar Breakdown */}
-                <div className="h-6 w-full bg-slate-950 rounded-full overflow-hidden flex p-1 border border-slate-800 shadow-inner">
+                <div className="h-5 sm:h-6 w-full bg-slate-950 rounded-full overflow-hidden flex p-1 border border-slate-800 shadow-inner">
                   {categoryList.map(([catName, amount]) => {
                     const pct = (amount / totalExpense) * 100;
                     const styleClass = CATEGORY_COLORS[catName] || 'bg-slate-600';
@@ -240,22 +241,22 @@ export default function ReportsPage() {
                 </div>
 
                 {/* Legenda Kategori Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
                   {categoryList.map(([catName, amount]) => {
                     const pct = totalExpense > 0 ? (amount / totalExpense) * 100 : 0;
                     const styleClass = CATEGORY_COLORS[catName] || 'bg-slate-600 text-slate-300 border-slate-600/30';
                     const bgDot = styleClass.split(' ')[0];
 
                     return (
-                      <div key={catName} className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex items-center justify-between shadow-sm">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-3.5 h-3.5 rounded-full ${bgDot}`} />
-                          <div>
-                            <p className="font-semibold text-sm text-slate-100">{catName}</p>
-                            <span className="text-xs text-slate-400 font-medium">{pct.toFixed(1)}% dari total</span>
+                      <div key={catName} className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between shadow-sm">
+                        <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                          <div className={`w-3 h-3 rounded-full shrink-0 ${bgDot}`} />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-xs sm:text-sm text-slate-100 truncate">{catName}</p>
+                            <span className="text-[10px] sm:text-xs text-slate-400 font-medium block">{pct.toFixed(1)}% dari total</span>
                           </div>
                         </div>
-                        <span className="font-bold text-sm text-rose-400">{formatRupiah(amount)}</span>
+                        <span className="font-bold text-xs sm:text-sm text-rose-400 shrink-0">{formatRupiah(amount)}</span>
                       </div>
                     );
                   })}
@@ -265,19 +266,19 @@ export default function ReportsPage() {
           </div>
 
           {/* Section: Arus Kas Harian & Sumber Dompet (Bank / Cash) */}
-          <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2.5">
-                <Calendar className="w-6 h-6 text-emerald-400" />
-                Catatan Arus Kas Per Tanggal ({monthName})
+          <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3.5">
+              <h3 className="text-base sm:text-xl font-bold text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 shrink-0" />
+                <span>Arus Kas Per Tanggal</span>
               </h3>
-              <span className="text-xs text-slate-400">{activeDays.length} Hari Aktif</span>
+              <span className="text-[11px] sm:text-xs text-slate-400">{activeDays.length} Hari Aktif</span>
             </div>
 
             {activeDays.length === 0 ? (
-              <p className="text-slate-500 text-sm text-center py-8">Belum ada riwayat transaksi pada bulan {monthName}.</p>
+              <p className="text-slate-500 text-sm text-center py-6">Belum ada riwayat transaksi pada bulan {monthName}.</p>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {activeDays.map(({ day, income, expense, txs }) => {
                   const dayDate = new Date(year, month, day).toLocaleDateString('id-ID', {
                     weekday: 'long',
@@ -286,14 +287,14 @@ export default function ReportsPage() {
                   });
 
                   return (
-                    <div key={day} className="bg-slate-950/60 border border-slate-800/90 rounded-2xl p-5 space-y-4 shadow-md">
+                    <div key={day} className="bg-slate-950/60 border border-slate-800/90 rounded-2xl p-4 sm:p-5 space-y-3 shadow-md">
                       {/* Date Title Header */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800/60 pb-3 gap-2">
-                        <span className="font-bold text-slate-200 text-sm flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800/60 pb-2.5 gap-1.5">
+                        <span className="font-bold text-slate-200 text-xs sm:text-sm flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                           {dayDate}
                         </span>
-                        <div className="flex items-center gap-4 text-xs font-semibold">
+                        <div className="flex items-center gap-3 text-[11px] sm:text-xs font-semibold">
                           {income > 0 && <span className="text-emerald-400">+ Pemasukan: {formatRupiah(income)}</span>}
                           {expense > 0 && <span className="text-rose-400">- Pengeluaran: {formatRupiah(expense)}</span>}
                         </div>
@@ -302,9 +303,9 @@ export default function ReportsPage() {
                       {/* Transactions List on this day */}
                       <div className="divide-y divide-slate-800/60">
                         {txs.map((t) => (
-                          <div key={t.id} className="py-2.5 flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-3">
-                              <div className={`p-2 rounded-xl ${
+                          <div key={t.id} className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className={`p-2 rounded-xl shrink-0 ${
                                 t.type === 'income' ? 'bg-emerald-500/10 text-emerald-400' :
                                 t.type === 'expense' ? 'bg-rose-500/10 text-rose-400' :
                                 'bg-blue-500/10 text-blue-400'
@@ -313,17 +314,18 @@ export default function ReportsPage() {
                                 {t.type === 'expense' && <ArrowUpRight className="w-4 h-4" />}
                                 {t.type === 'transfer' && <WalletIcon className="w-4 h-4" />}
                               </div>
-                              <div>
-                                <p className="font-semibold text-slate-200">{t.category}</p>
-                                <p className="text-xs text-slate-400">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-semibold text-slate-200 truncate">{t.category}</p>
+                                <p className="text-[11px] text-slate-400 truncate">
                                   Akun: <span className="text-slate-300 font-medium">{t.wallet?.name || 'Dompet'}</span>
                                   {t.type === 'transfer' && t.to_wallet ? ` ➔ ${t.to_wallet.name}` : ''}
                                   {t.notes ? ` • "${t.notes}"` : ''}
                                 </p>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <span className={`font-bold ${
+
+                            <div className="flex sm:flex-col justify-between items-baseline sm:items-end border-t border-slate-800/40 sm:border-0 pt-1.5 sm:pt-0 pl-11 sm:pl-0">
+                              <span className={`font-black text-xs sm:text-sm ${
                                 t.type === 'income' ? 'text-emerald-400' :
                                 t.type === 'expense' ? 'text-rose-400' :
                                 'text-slate-300'
@@ -331,7 +333,7 @@ export default function ReportsPage() {
                                 {t.type === 'income' ? '+' : t.type === 'expense' ? '-' : ''}
                                 {formatRupiah(Number(t.amount))}
                               </span>
-                              <p className="text-[11px] text-slate-500">
+                              <p className="text-[10px] text-slate-500">
                                 {new Date(t.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                               </p>
                             </div>
