@@ -26,7 +26,11 @@ export default function LoginPage() {
       if (error) throw error;
       window.location.href = '/dashboard';
     } catch (err: any) {
-      setErrorMsg(err.message || 'Email atau password salah.');
+      if (err.message?.includes('Failed to fetch') || err.name === 'TypeError') {
+        setErrorMsg('Gagal terhubung ke Supabase (Failed to fetch). Pastikan NEXT_PUBLIC_SUPABASE_URL & NEXT_PUBLIC_SUPABASE_ANON_KEY telah diisi di Environment Variables (Vercel / .env.local).');
+      } else {
+        setErrorMsg(err.message || 'Email atau password salah.');
+      }
     } finally {
       setLoading(false);
     }
