@@ -13,7 +13,13 @@ import {
   Tag, 
   FileText,
   Loader2,
-  Clock
+  Clock,
+  Utensils,
+  Car,
+  ShoppingBag,
+  Zap,
+  Film,
+  CircleDollarSign
 } from 'lucide-react';
 
 interface TransactionFormProps {
@@ -154,31 +160,31 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
   const terbilangText = terbilang(rawAmount);
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-900/90 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-6 shadow-2xl space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-        <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-          <FileText className="w-5 h-5 text-emerald-400" />
-          Tambah Transaksi Baru
+    <form onSubmit={handleSubmit} className="p-5 sm:p-7 space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-slate-700/80 pb-4">
+        <h3 className="text-xl font-bold text-slate-100 flex items-center gap-2.5">
+          <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
+            <FileText className="w-5 h-5" />
+          </div>
+          <span>Tambah Transaksi Baru</span>
         </h3>
-        <span className="text-xs bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full font-semibold border border-emerald-500/20">
-          Personal
-        </span>
       </div>
 
       {errorMsg && (
-        <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-sm">
+        <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-sm">
           {errorMsg}
         </div>
       )}
 
-      {/* Selector Tipe Transaksi */}
-      <div className="grid grid-cols-3 gap-2 p-1.5 bg-slate-950/80 rounded-xl border border-slate-800/80">
+      {/* Selector Tipe Transaksi (Pill buttons matching mockup) */}
+      <div className="grid grid-cols-3 gap-2 p-1.5 bg-slate-950/90 rounded-2xl border border-slate-800">
         <button
           type="button"
           onClick={() => handleTypeChange('expense')}
-          className={`flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+          className={`flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all ${
             type === 'expense'
-              ? 'bg-gradient-to-r from-rose-600 to-rose-500 text-white shadow-lg shadow-rose-600/20'
+              ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 text-white shadow-lg shadow-rose-600/30'
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
           }`}
         >
@@ -188,9 +194,9 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
         <button
           type="button"
           onClick={() => handleTypeChange('income')}
-          className={`flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+          className={`flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all ${
             type === 'income'
-              ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-600/20'
+              ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-600/30'
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
           }`}
         >
@@ -200,9 +206,9 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
         <button
           type="button"
           onClick={() => handleTypeChange('transfer')}
-          className={`flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+          className={`flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all ${
             type === 'transfer'
-              ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-600/20'
+              ? 'bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-500 text-white shadow-lg shadow-blue-600/30'
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
           }`}
         >
@@ -212,9 +218,11 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
 
       {/* Input Nominal */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Nominal (IDR)</label>
+        <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+          NOMINAL (IDR)
+        </label>
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-lg">Rp</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xl">Rp</span>
           <input
             type="text"
             required
@@ -224,11 +232,11 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
               const val = e.target.value.replace(/[^0-9]/g, '');
               setAmountInput(val ? parseInt(val, 10).toLocaleString('id-ID') : '');
             }}
-            className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-12 pr-4 py-3.5 text-2xl font-black text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
+            className="w-full bg-slate-950/90 border border-slate-700/80 rounded-2xl pl-12 pr-4 py-3.5 text-2xl font-black text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition shadow-inner"
           />
         </div>
         {rawAmount > 0 && terbilangText && (
-          <div className="mt-2 p-2.5 bg-slate-950/60 border border-slate-800/60 rounded-lg text-xs text-slate-300">
+          <div className="mt-2 p-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-300">
             <span className="text-slate-400 font-semibold">Terbilang: </span>
             <span className="text-emerald-400 font-bold italic">{terbilangText}</span>
           </div>
@@ -238,20 +246,20 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
       {/* Selection Dompet & Transfer Target */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
+          <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
             <WalletIcon className="w-3.5 h-3.5 text-slate-400" />
-            {type === 'transfer' ? 'Dari Dompet (Asal)' : 'Dompet / Akun'}
+            {type === 'transfer' ? 'DARI DOMPET (ASAL)' : 'DOMPET / AKUN'}
           </label>
           {fetchingWallets ? (
-            <div className="h-11 bg-slate-950 border border-slate-800 rounded-xl animate-pulse"></div>
+            <div className="h-11 bg-slate-950 border border-slate-800 rounded-2xl animate-pulse"></div>
           ) : (
             <select
               value={walletId}
               onChange={(e) => setWalletId(e.target.value)}
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500"
+              className="w-full bg-slate-950/90 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 font-bold focus:outline-none focus:border-emerald-500"
             >
               {wallets.map((w) => (
-                <option key={w.id} value={w.id}>
+                <option key={w.id} value={w.id} className="bg-slate-900 text-slate-100">
                   {w.name} ({formatRupiah(w.balance)})
                 </option>
               ))}
@@ -261,19 +269,19 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
 
         {type === 'transfer' && (
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
               <ArrowRightLeft className="w-3.5 h-3.5 text-blue-400" />
-              Ke Dompet (Tujuan)
+              KE DOMPET (TUJUAN)
             </label>
             <select
               value={toWalletId}
               onChange={(e) => setToWalletId(e.target.value)}
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-950/90 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 font-bold focus:outline-none focus:border-blue-500"
             >
               {wallets
                 .filter((w) => w.id !== walletId)
                 .map((w) => (
-                  <option key={w.id} value={w.id}>
+                  <option key={w.id} value={w.id} className="bg-slate-900 text-slate-100">
                     {w.name} ({formatRupiah(w.balance)})
                   </option>
                 ))}
@@ -285,16 +293,16 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
       {/* Kategori & Tanggal */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
-            <Tag className="w-3.5 h-3.5 text-slate-400" /> Kategori
+          <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
+            <Tag className="w-3.5 h-3.5 text-slate-400" /> KATEGORI
           </label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-slate-950/90 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 font-bold focus:outline-none focus:border-emerald-500"
           >
             {CATEGORIES[type].map((cat) => (
-              <option key={cat} value={cat}>
+              <option key={cat} value={cat} className="bg-slate-900 text-slate-100">
                 {cat}
               </option>
             ))}
@@ -303,28 +311,28 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" /> Tanggal & Waktu
+            <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-slate-400" /> TANGGAL & WAKTU
             </label>
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => handleSetQuickDate('now')}
-                className="text-[10px] bg-slate-800 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 px-2 py-0.5 rounded transition flex items-center gap-1"
+                className="text-[10px] bg-slate-800 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 px-2 py-0.5 rounded-lg transition flex items-center gap-1"
               >
                 <Clock className="w-2.5 h-2.5" /> Sekarang
               </button>
               <button
                 type="button"
                 onClick={() => handleSetQuickDate('today')}
-                className="text-[10px] bg-slate-800 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 px-2 py-0.5 rounded transition"
+                className="text-[10px] bg-slate-800 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 px-2 py-0.5 rounded-lg transition"
               >
                 Hari Ini
               </button>
               <button
                 type="button"
                 onClick={() => handleSetQuickDate('yesterday')}
-                className="text-[10px] bg-slate-800 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 px-2 py-0.5 rounded transition"
+                className="text-[10px] bg-slate-800 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 px-2 py-0.5 rounded-lg transition"
               >
                 Kemarin
               </button>
@@ -334,28 +342,28 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
             type="datetime-local"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
+            className="w-full bg-slate-950/90 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 font-semibold focus:outline-none focus:border-emerald-500 cursor-pointer"
           />
         </div>
       </div>
 
       {/* Catatan / Keterangan */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Catatan / Keterangan (Opsional)</label>
+        <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">CATATAN / KETERANGAN (OPSIONAL)</label>
         <input
           type="text"
           placeholder="Misal: Makan siang Nasi Padang..."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500"
+          className="w-full bg-slate-950/90 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"
         />
       </div>
 
-      {/* Submit Button */}
+      {/* Submit Button (Matching Mockup) */}
       <button
         type="submit"
         disabled={loading || fetchingWallets}
-        className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+        className="w-full py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-base rounded-2xl transition-all flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/25 disabled:opacity-50 hover:scale-[1.01] active:scale-[0.99]"
       >
         {loading ? (
           <>

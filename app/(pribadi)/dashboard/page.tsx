@@ -21,6 +21,12 @@ import {
   Sparkles
 } from 'lucide-react';
 import { TransactionModal } from '@/components/modals/transaction-modal';
+import { 
+  LeatherWalletIllustration, 
+  BankBuildingIllustration, 
+  SmartphoneIllustration, 
+  CashStackIllustration 
+} from '@/components/ui/3d-illustrations';
 
 export default function DashboardPage() {
   const supabase = createClient();
@@ -74,24 +80,24 @@ export default function DashboardPage() {
       {/* Header & Quick Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
         <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
             Dashboard Keuangan
             <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Pantau total kekayaan bersih & arus kas anda.</p>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Pantau total kekayaan bersih (Net Worth) dan arus kas real-time anda.</p>
         </div>
 
         <div className="grid grid-cols-2 sm:flex items-center gap-2.5 w-full sm:w-auto">
           <Link
             href="/reports"
-            className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800/80 text-slate-200 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-md text-center"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900/90 border border-slate-700/80 hover:bg-slate-800 text-slate-200 text-xs sm:text-sm font-bold rounded-2xl transition-all shadow-md text-center"
           >
             <BarChart3 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>Statistik</span>
+            <span>Statistik & Laporan</span>
           </Link>
           <button
             onClick={() => setShowTransactionModal(true)}
-            className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.02] text-center"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs sm:text-sm font-extrabold rounded-2xl shadow-lg shadow-emerald-600/25 transition-all hover:scale-[1.02] text-center"
           >
             <Plus className="w-4 h-4 shrink-0" />
             <span>Catat Transaksi</span>
@@ -112,72 +118,86 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          {/* Net Worth Summary Card */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/80 border border-emerald-500/30 rounded-3xl p-5 sm:p-8 md:p-10 shadow-2xl shadow-emerald-950/30">
-            <div className="relative z-10 space-y-2 sm:space-y-3">
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full inline-block">
-                Total Net Worth
+          {/* Net Worth Summary Card (Matching Mockup Image) */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-900/95 to-slate-950 border-t border-slate-700/70 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl space-y-4">
+            <div className="relative z-10 max-w-xl space-y-3">
+              <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 rounded-full inline-block">
+                TOTAL NET WORTH
               </span>
-              <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight break-words">
+              <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight break-words drop-shadow-md">
                 {formatRupiah(netWorth)}
               </h2>
               <p className="text-xs sm:text-sm text-slate-400 pt-1">
-                Terkonsolidasi dari <span className="text-white font-bold">{wallets.length} akun dompet</span> aktif.
+                Terkonsolidasi dari <span className="text-slate-200 font-bold">{wallets.length} akun dompet</span> aktif.
               </p>
             </div>
-            <div className="absolute right-2 -bottom-8 opacity-10 pointer-events-none sm:opacity-15">
-              <WalletIcon className="w-48 h-48 sm:w-64 sm:h-64 text-emerald-400" />
+
+            {/* 3D Leather Wallet Illustration on Right Side */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:block pointer-events-none opacity-90 transition-transform hover:scale-105">
+              <LeatherWalletIllustration className="w-44 h-44 md:w-56 md:h-56 drop-shadow-2xl" />
             </div>
           </div>
 
-          {/* Wallet Type Breakdown */}
+          {/* Wallet Type Breakdown (Brushed Platinum Metallic Cards matching mockup) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 sm:p-6 shadow-xl space-y-2.5 hover:border-blue-500/40 transition">
+            <div className="bg-gradient-to-b from-slate-800/90 via-slate-900/90 to-slate-950 border-t border-slate-700/60 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden group hover:border-blue-500/40 transition">
               <div className="flex items-center justify-between text-blue-400">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Rekening Bank</span>
-                <div className="p-2 bg-blue-500/10 rounded-xl">
-                  <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">REKENING BANK</span>
+                <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
+                  <Building2 className="w-5 h-5 text-blue-400" />
                 </div>
               </div>
-              <p className="text-xl sm:text-2xl font-extrabold text-slate-100 break-words">{formatRupiah(totalBank)}</p>
-              <div className="text-[11px] sm:text-xs text-slate-500">
+              <p className="text-2xl font-black text-white tracking-tight mt-3 break-words">{formatRupiah(totalBank)}</p>
+              <div className="text-xs font-medium text-slate-400 mt-1">
                 {wallets.filter(w => w.type === 'bank').length} Akun Bank
               </div>
+              
+              <div className="absolute right-2 -bottom-2 opacity-30 group-hover:opacity-60 transition-opacity pointer-events-none">
+                <BankBuildingIllustration className="w-20 h-20" />
+              </div>
             </div>
 
-            <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 sm:p-6 shadow-xl space-y-2.5 hover:border-indigo-500/40 transition">
+            <div className="bg-gradient-to-b from-slate-800/90 via-slate-900/90 to-slate-950 border-t border-slate-700/60 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden group hover:border-indigo-500/40 transition">
               <div className="flex items-center justify-between text-indigo-400">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">E-Wallet</span>
-                <div className="p-2 bg-indigo-500/10 rounded-xl">
-                  <Smartphone className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">E-WALLET</span>
+                <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl">
+                  <Smartphone className="w-5 h-5 text-indigo-400" />
                 </div>
               </div>
-              <p className="text-xl sm:text-2xl font-extrabold text-slate-100 break-words">{formatRupiah(totalEWallet)}</p>
-              <div className="text-[11px] sm:text-xs text-slate-500">
+              <p className="text-2xl font-black text-white tracking-tight mt-3 break-words">{formatRupiah(totalEWallet)}</p>
+              <div className="text-xs font-medium text-slate-400 mt-1">
                 {wallets.filter(w => w.type === 'ewallet').length} Akun E-Wallet
               </div>
+
+              <div className="absolute right-2 -bottom-2 opacity-30 group-hover:opacity-60 transition-opacity pointer-events-none">
+                <SmartphoneIllustration className="w-20 h-20" />
+              </div>
             </div>
 
-            <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 sm:p-6 shadow-xl space-y-2.5 hover:border-emerald-500/40 transition">
+            <div className="bg-gradient-to-b from-slate-800/90 via-slate-900/90 to-slate-950 border-t border-slate-700/60 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden group hover:border-emerald-500/40 transition">
               <div className="flex items-center justify-between text-emerald-400">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Cash / Tunai</span>
-                <div className="p-2 bg-emerald-500/10 rounded-xl">
-                  <Banknote className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">CASH / TUNAI</span>
+                <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                  <Banknote className="w-5 h-5 text-emerald-400" />
                 </div>
               </div>
-              <p className="text-xl sm:text-2xl font-extrabold text-slate-100 break-words">{formatRupiah(totalCash)}</p>
-              <div className="text-[11px] sm:text-xs text-slate-500">
+              <p className="text-2xl font-black text-white tracking-tight mt-3 break-words">{formatRupiah(totalCash)}</p>
+              <div className="text-xs font-medium text-slate-400 mt-1">
                 {wallets.filter(w => w.type === 'cash').length} Akun Tunai
+              </div>
+
+              <div className="absolute right-2 -bottom-2 opacity-30 group-hover:opacity-60 transition-opacity pointer-events-none">
+                <CashStackIllustration className="w-20 h-20" />
               </div>
             </div>
           </div>
 
           {/* Rincian Riwayat Transaksi Terakhir */}
-          <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3.5">
-              <h3 className="text-base sm:text-lg font-bold text-slate-100">Riwayat Transaksi Terakhir</h3>
-              <Link href="/reports" className="text-xs text-emerald-400 hover:underline font-semibold flex items-center gap-1">
-                Laporan Lengkap ➔
+          <div className="bg-gradient-to-b from-slate-800/90 via-slate-900/95 to-slate-950 border-t border-slate-700/70 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-5 sm:p-7 md:p-8 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">Riwayat Transaksi Terakhir</h3>
+              <Link href="/reports" className="text-xs text-emerald-400 hover:underline font-bold flex items-center gap-1">
+                Lihat Laporan Lengkap ➔
               </Link>
             </div>
 
@@ -186,9 +206,9 @@ export default function DashboardPage() {
             ) : (
               <div className="divide-y divide-slate-800/80">
                 {recentTransactions.map((tx) => (
-                  <div key={tx.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-800/30 px-2 rounded-xl transition">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2.5 rounded-xl shrink-0 ${
+                  <div key={tx.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-800/40 px-3 rounded-2xl transition">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`p-2.5 rounded-2xl shrink-0 ${
                         tx.type === 'income' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
                         tx.type === 'expense' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
                         'bg-blue-500/10 text-blue-400 border border-blue-500/20'
@@ -198,7 +218,7 @@ export default function DashboardPage() {
                         {tx.type === 'transfer' && <ArrowRightLeft className="w-4 h-4" />}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-bold text-slate-200 text-sm truncate">{tx.category}</p>
+                        <p className="font-bold text-slate-100 text-sm truncate">{tx.category}</p>
                         <p className="text-xs text-slate-400 truncate">
                           {tx.type === 'transfer' 
                             ? `${tx.wallet?.name} ➔ ${tx.to_wallet?.name}`
@@ -217,7 +237,7 @@ export default function DashboardPage() {
                         {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
                         {formatRupiah(Number(tx.amount))}
                       </p>
-                      <p className="text-[10px] sm:text-[11px] text-slate-500">
+                      <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
                         {new Date(tx.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
