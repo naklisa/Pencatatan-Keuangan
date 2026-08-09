@@ -9,15 +9,5 @@ export default async function RootPage() {
     redirect('/login');
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('account_role')
-    .eq('id', user.id)
-    .single();
-
-  if (profile?.account_role === 'kontrakan') {
-    redirect('/kontrakan');
-  } else {
-    redirect('/dashboard');
-  }
+  redirect('/dashboard');
 }

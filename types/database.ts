@@ -1,16 +1,19 @@
-export type AccountRole = 'pribadi' | 'kontrakan';
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
 export type WalletType = 'bank' | 'ewallet' | 'cash';
 export type TransactionType = 'income' | 'expense' | 'transfer';
-export type HouseMemberRole = 'admin' | 'member';
-export type SharedExpenseStatus = 'pending' | 'settled';
-export type SplitStatus = 'unpaid' | 'paid';
 
 export interface Profile {
   id: string;
   full_name: string;
   avatar_url?: string | null;
   phone_number?: string | null;
-  account_role: AccountRole;
   updated_at: string;
   created_at: string;
 }
@@ -38,95 +41,150 @@ export interface PersonalTransaction {
   notes?: string | null;
   date: string;
   created_at: string;
-  wallet?: Wallet;
-  to_wallet?: Wallet;
+  wallet?: { name: string; type: WalletType } | Wallet;
+  to_wallet?: { name: string; type: WalletType } | Wallet;
 }
 
-export interface House {
-  id: string;
-  name: string;
-  address?: string | null;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface HouseMember {
-  id: string;
-  house_id: string;
-  user_id: string;
-  role: HouseMemberRole;
-  joined_at: string;
-  profile?: Profile;
-}
-
-export interface SharedExpense {
-  id: string;
-  house_id: string;
-  paid_by: string;
-  title: string;
-  amount: number;
-  category: string;
-  due_date: string;
-  status: SharedExpenseStatus;
-  receipt_url?: string | null;
-  notes?: string | null;
-  created_at: string;
-  updated_at: string;
-  payer?: Profile;
-  splits?: ExpenseSplit[];
-}
-
-export interface ExpenseSplit {
-  id: string;
-  shared_expense_id: string;
-  user_id: string;
-  amount_due: number;
-  status: SplitStatus;
-  proof_url?: string | null;
-  paid_at?: string | null;
-  created_at: string;
-  user?: Profile;
-}
-
-export interface Database {
+export type Database = {
   public: {
     Tables: {
+      personal_transactions: {
+        Row: {
+          amount: number;
+          category: string;
+          created_at: string;
+          date: string;
+          id: string;
+          notes: string | null;
+          to_wallet_id: string | null;
+          type: Database["public"]["Enums"]["transaction_type"];
+          user_id: string;
+          wallet_id: string;
+        };
+        Insert: {
+          amount: number;
+          category: string;
+          created_at?: string;
+          date?: string;
+          id?: string;
+          notes?: string | null;
+          to_wallet_id?: string | null;
+          type: Database["public"]["Enums"]["transaction_type"];
+          user_id: string;
+          wallet_id: string;
+        };
+        Update: {
+          amount?: number;
+          category?: string;
+          created_at?: string;
+          date?: string;
+          id?: string;
+          notes?: string | null;
+          to_wallet_id?: string | null;
+          type?: Database["public"]["Enums"]["transaction_type"];
+          user_id?: string;
+          wallet_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "personal_transactions_to_wallet_id_fkey";
+            columns: ["to_wallet_id"];
+            isOneToOne: false;
+            referencedRelation: "wallets";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "personal_transactions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "personal_transactions_wallet_id_fkey";
+            columns: ["wallet_id"];
+            isOneToOne: false;
+            referencedRelation: "wallets";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       profiles: {
-        Row: Profile;
-        Insert: Omit<Profile, 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Profile, 'id'>>;
+        Row: {
+          avatar_url: string | null;
+          created_at: string;
+          full_name: string;
+          id: string;
+          phone_number: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          avatar_url?: string | null;
+          created_at?: string;
+          full_name: string;
+          id: string;
+          phone_number?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          avatar_url?: string | null;
+          created_at?: string;
+          full_name?: string;
+          id?: string;
+          phone_number?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       wallets: {
-        Row: Wallet;
-        Insert: Omit<Wallet, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Wallet, 'id' | 'user_id'>>;
-      };
-      personal_transactions: {
-        Row: PersonalTransaction;
-        Insert: Omit<PersonalTransaction, 'id' | 'created_at'>;
-        Update: Partial<Omit<PersonalTransaction, 'id' | 'user_id'>>;
-      };
-      houses: {
-        Row: House;
-        Insert: Omit<House, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<House, 'id' | 'created_by'>>;
-      };
-      house_members: {
-        Row: HouseMember;
-        Insert: Omit<HouseMember, 'id' | 'joined_at'>;
-        Update: Partial<Omit<HouseMember, 'id'>>;
-      };
-      shared_expenses: {
-        Row: SharedExpense;
-        Insert: Omit<SharedExpense, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<SharedExpense, 'id'>>;
-      };
-      expense_splits: {
-        Row: ExpenseSplit;
-        Insert: Omit<ExpenseSplit, 'id' | 'created_at'>;
-        Update: Partial<Omit<ExpenseSplit, 'id'>>;
+        Row: {
+          balance: number;
+          created_at: string;
+          icon: string | null;
+          id: string;
+          is_active: boolean;
+          name: string;
+          type: Database["public"]["Enums"]["wallet_type"];
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          balance?: number;
+          created_at?: string;
+          icon?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          type: Database["public"]["Enums"]["wallet_type"];
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          balance?: number;
+          created_at?: string;
+          icon?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          type?: Database["public"]["Enums"]["wallet_type"];
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
       };
     };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      transaction_type: "income" | "expense" | "transfer";
+      wallet_type: "bank" | "ewallet" | "cash";
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
-}
+};

@@ -49,10 +49,11 @@ export default function WalletsPage() {
       .order('created_at', { ascending: true });
 
     if (data) {
-      setWallets(data);
-      if (data.length >= 2) {
-        setFromWalletId(data[0].id);
-        setToWalletId(data[1].id);
+      const walletList = data as Wallet[];
+      setWallets(walletList);
+      if (walletList.length >= 2) {
+        setFromWalletId(walletList[0].id);
+        setToWalletId(walletList[1].id);
       }
     }
     setLoading(false);

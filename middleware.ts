@@ -48,22 +48,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Handle authenticated users routing based on role
+  // Handle authenticated users routing
   if (user) {
     if (pathname === '/login') {
-      // Dapatkan role profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('account_role')
-        .eq('id', user.id)
-        .single();
-
       const url = request.nextUrl.clone();
-      if (profile?.account_role === 'kontrakan') {
-        url.pathname = '/kontrakan';
-      } else {
-        url.pathname = '/dashboard';
-      }
+      url.pathname = '/dashboard';
       return NextResponse.redirect(url);
     }
   }

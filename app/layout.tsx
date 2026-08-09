@@ -3,8 +3,8 @@ import "./globals.css";
 import { Navigation } from "@/components/layout/navigation";
 
 export const metadata: Metadata = {
-  title: "Pencatatan Keuangan (Pribadi & Kontrakan)",
-  description: "Aplikasi Manajemen Keuangan Pribadi & Kas Kontrakan",
+  title: "Pencatatan Keuangan Pribadi",
+  description: "Aplikasi Manajemen Keuangan Pribadi",
 };
 
 export default function RootLayout({

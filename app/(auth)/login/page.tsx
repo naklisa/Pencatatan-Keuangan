@@ -35,7 +35,7 @@ export default function LoginPage() {
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 w-full max-w-md shadow-2xl space-y-6">
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center font-black text-slate-950 text-2xl mx-auto shadow-lg shadow-emerald-500/20">
-            K
+            P
           </div>
           <h1 className="text-2xl font-bold text-white">Masuk ke Aplikasi</h1>
           <p className="text-sm text-slate-400">
