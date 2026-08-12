@@ -10,10 +10,8 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-// Create a Supabase admin/service client using anon or service key
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Helper function to send Telegram message
 async function sendTelegramMessage(chatId: number | string, text: string) {
   if (!TELEGRAM_BOT_TOKEN) return;
 
@@ -50,19 +48,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: 'ok' });
     }
 
+    const strChatId = chatId.toString();
+
     // 1. Handle /start command (Pairing Account)
     if (cleanText.startsWith('/start')) {
       const parts = cleanText.split(' ');
       const userIdParam = parts[1]; // /start <user_id>
 
       if (userIdParam) {
-        // Pair user_id with telegram_chat_id
-        const { error } = await supabase
-          .from('profiles')
-          .update({ telegram_chat_id: chatId.toString() })
-          .eq('id', userIdParam);
+        // Try RPC first, fallback to direct update
+        const { error: rpcErr } = await supabase.rpc('pair_telegram_chat_id', {
+          p_user_id: userIdParam,
+          p_chat_id: strChatId,
+        });
 
-        if (!error) {
+        let isSuccess = !rpcErr;
+        if (!isSuccess) {
+          const { error: directErr } = await supabase
+            .from('profiles')
+            .update({ telegram_chat_id: strChatId })
+            .eq('id', userIdParam);
+          isSuccess = !directErr;
+        }
+
+        if (isSuccess) {
           await sendTelegramMessage(
             chatId,
             `🎉 <b>Selamat! Akun Keuangan Anda Berhasil Terhubung!</b>\n\nSekarang Anda dapat mencatat transaksi secara langsung lewat chat di bot ini.\n\n💡 <b>Contoh Cara Pakai:</b>\n• <code>Makan Nasi Padang 35rb bca</code>\n• <code>Pemasukan gaji 5jt bca</code>\n• <code>Transfer 200rb bca dana</code>\n• <code>/saldo</code> (untuk cek saldo)`
@@ -71,12 +80,22 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Check if already paired
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('telegram_chat_id', chatId.toString())
-        .single();
+      // Check if already paired via RPC or direct query
+      let existingUser: any = null;
+      const { data: rpcProfile } = await supabase.rpc('get_profile_by_telegram_chat_id', {
+        p_chat_id: strChatId,
+      });
+
+      if (rpcProfile && rpcProfile.length > 0) {
+        existingUser = rpcProfile[0];
+      } else {
+        const { data: directProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('telegram_chat_id', strChatId)
+          .single();
+        existingUser = directProfile;
+      }
 
       if (existingUser) {
         await sendTelegramMessage(
@@ -86,23 +105,33 @@ export async function POST(req: NextRequest) {
       } else {
         await sendTelegramMessage(
           chatId,
-          `⚠️ <b>Akun Belum Terhubung</b>\n\nSilakan buka <b>Dashboard Aplikasi Pencatatan Keuangan</b> Anda, lalu klik tombol <b>"Hubungkan Telegram Bot"</b> untuk mengaktifkan fitur ini.`
+          `⚠️ <b>Akun Belum Terhubung</b>\n\nSilakan buka <b>Dashboard Aplikasi Pencatatan Keuangan</b> Anda, lalu klik tombol <b>"Bot Telegram"</b> untuk mengaktifkan fitur ini.`
         );
       }
       return NextResponse.json({ status: 'ok' });
     }
 
-    // 2. Query user profile by telegram_chat_id
-    const { data: userProfile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('telegram_chat_id', chatId.toString())
-      .single();
+    // 2. Fetch User Profile by Telegram Chat ID
+    let userProfile: any = null;
+    const { data: rpcProfiles } = await supabase.rpc('get_profile_by_telegram_chat_id', {
+      p_chat_id: strChatId,
+    });
+
+    if (rpcProfiles && rpcProfiles.length > 0) {
+      userProfile = rpcProfiles[0];
+    } else {
+      const { data: directProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('telegram_chat_id', strChatId)
+        .single();
+      userProfile = directProfile;
+    }
 
     if (!userProfile) {
       await sendTelegramMessage(
         chatId,
-        `⚠️ <b>Akun Belum Terhubung</b>\n\nSilakan buka <b>Dashboard Aplikasi Pencatatan Keuangan</b> Anda, lalu klik tombol <b>"Hubungkan Telegram Bot"</b> untuk menghubungkan akun ini.`
+        `⚠️ <b>Akun Belum Terhubung</b>\n\nSilakan buka <b>Dashboard Aplikasi Pencatatan Keuangan</b> Anda, lalu klik tombol <b>"Bot Telegram"</b> untuk menghubungkan akun ini.`
       );
       return NextResponse.json({ status: 'unpaired' });
     }
@@ -110,27 +139,35 @@ export async function POST(req: NextRequest) {
     const userId = userProfile.id;
 
     // Fetch user wallets
-    const { data: userWallets } = await supabase
-      .from('wallets')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('is_active', true)
-      .order('name');
+    let userWallets: Wallet[] = [];
+    const { data: rpcWallets } = await supabase.rpc('get_wallets_by_telegram_chat_id', {
+      p_chat_id: strChatId,
+    });
 
-    const walletsList: Wallet[] = userWallets || [];
+    if (rpcWallets && rpcWallets.length > 0) {
+      userWallets = rpcWallets as any;
+    } else {
+      const { data: directWallets } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .order('name');
+      if (directWallets) userWallets = directWallets as any;
+    }
 
     // 3. Handle /saldo command
     if (cleanText.startsWith('/saldo') || cleanText.startsWith('/cek')) {
-      if (walletsList.length === 0) {
+      if (userWallets.length === 0) {
         await sendTelegramMessage(chatId, `👛 <b>Belum Ada Dompet Aktif</b>`);
         return NextResponse.json({ status: 'ok' });
       }
 
-      const totalBalance = walletsList.reduce((acc, w) => acc + Number(w.balance), 0);
+      const totalBalance = userWallets.reduce((acc, w) => acc + Number(w.balance), 0);
       let balanceText = `📊 <b>RINGKASAN SALDO DOMPET</b>\n\n`;
 
-      walletsList.forEach((w) => {
-        balanceText += `• <b>${w.name}</b>: ${formatRupiah(w.balance)}\n`;
+      userWallets.forEach((w) => {
+        balanceText += `• <b>${w.name}</b>: ${formatRupiah(Number(w.balance))}\n`;
       });
 
       balanceText += `\n💰 <b>TOTAL NET WORTH: ${formatRupiah(totalBalance)}</b>`;
@@ -139,7 +176,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Parse transaction text
-    const parsed = parseTelegramText(cleanText, walletsList);
+    const parsed = parseTelegramText(cleanText, userWallets);
 
     if (!parsed) {
       await sendTelegramMessage(
@@ -149,31 +186,48 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: 'parse_error' });
     }
 
-    // 5. Insert transaction into Supabase
-    const { error: insertError } = await supabase.from('personal_transactions').insert({
-      user_id: userId,
-      wallet_id: parsed.walletId,
-      to_wallet_id: parsed.type === 'transfer' ? parsed.toWalletId : null,
-      amount: parsed.amount,
-      type: parsed.type,
-      category: parsed.category,
-      notes: parsed.notes,
-      date: new Date().toISOString(),
+    // 5. Insert transaction into Supabase via RPC or Direct
+    let isTxInserted = false;
+    let currentBalance = 0;
+
+    const { data: rpcTxResult, error: rpcTxErr } = await supabase.rpc('insert_telegram_transaction', {
+      p_chat_id: strChatId,
+      p_wallet_id: parsed.walletId,
+      p_to_wallet_id: parsed.type === 'transfer' ? parsed.toWalletId : null,
+      p_amount: parsed.amount,
+      p_type: parsed.type,
+      p_category: parsed.category,
+      p_notes: parsed.notes,
     });
 
-    if (insertError) {
-      await sendTelegramMessage(chatId, `❌ <b>Gagal Menyimpan Transaksi:</b> ${insertError.message}`);
-      return NextResponse.json({ status: 'db_error' });
+    if (!rpcTxErr && rpcTxResult && rpcTxResult.length > 0) {
+      isTxInserted = true;
+      currentBalance = Number(rpcTxResult[0].updated_balance);
+    } else {
+      const { error: directTxErr } = await supabase.from('personal_transactions').insert({
+        user_id: userId,
+        wallet_id: parsed.walletId,
+        to_wallet_id: parsed.type === 'transfer' ? parsed.toWalletId : null,
+        amount: parsed.amount,
+        type: parsed.type,
+        category: parsed.category,
+        notes: parsed.notes,
+        date: new Date().toISOString(),
+      });
+
+      if (!directTxErr) {
+        isTxInserted = true;
+        const { data: updatedW } = await supabase
+          .from('wallets')
+          .select('balance')
+          .eq('id', parsed.walletId)
+          .single();
+        if (updatedW) currentBalance = Number(updatedW.balance);
+      } else {
+        await sendTelegramMessage(chatId, `❌ <b>Gagal Menyimpan Transaksi:</b> ${directTxErr.message}`);
+        return NextResponse.json({ status: 'db_error' });
+      }
     }
-
-    // Fetch updated target wallet balance
-    const { data: updatedWallet } = await supabase
-      .from('wallets')
-      .select('*')
-      .eq('id', parsed.walletId)
-      .single();
-
-    const currentBalance = updatedWallet ? Number(updatedWallet.balance) : 0;
 
     const typeEmoji = parsed.type === 'income' ? '📥' : parsed.type === 'expense' ? '💸' : '🔄';
     const typeLabel = parsed.type === 'income' ? 'Pemasukan' : parsed.type === 'expense' ? 'Pengeluaran' : 'Transfer';
