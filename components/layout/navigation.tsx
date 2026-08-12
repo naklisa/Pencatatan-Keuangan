@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Wallet, LayoutDashboard, LogOut, BarChart3 } from 'lucide-react';
+import { Wallet, LayoutDashboard, LogOut, BarChart3, History } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export function Navigation() {
@@ -49,6 +49,17 @@ export function Navigation() {
             }`}
           >
             <LayoutDashboard className="w-4 h-4" /> Dashboard
+          </Link>
+
+          <Link
+            href="/transactions"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all ${
+              pathname === '/transactions' 
+                ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 font-bold' 
+                : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+            }`}
+          >
+            <History className="w-4 h-4" /> Riwayat Transaksi
           </Link>
 
           <Link
@@ -106,6 +117,18 @@ export function Navigation() {
         >
           <LayoutDashboard className="w-5 h-5" />
           <span className="text-[10px] font-semibold">Dashboard</span>
+        </Link>
+
+        <Link
+          href="/transactions"
+          className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+            pathname === '/transactions'
+              ? 'text-emerald-400 font-bold'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <History className="w-5 h-5" />
+          <span className="text-[10px] font-semibold">Riwayat</span>
         </Link>
 
         <Link

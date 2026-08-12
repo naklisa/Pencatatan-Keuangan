@@ -68,8 +68,11 @@ export function TransactionModal({ isOpen, onClose, onSuccess }: TransactionModa
 
         <TransactionForm
           onSuccess={() => {
+            onClose();
             if (onSuccess) onSuccess();
-            handleClose();
+            if (window.history.state?.modalOpen) {
+              window.history.back();
+            }
           }}
         />
       </div>

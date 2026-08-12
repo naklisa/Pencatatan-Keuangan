@@ -7,25 +7,30 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Wallet, PersonalTransaction } from '@/types/database';
 import { formatRupiah } from '@/lib/utils';
-import { 
-  Wallet as WalletIcon, 
-  Building2, 
-  Smartphone, 
-  Banknote, 
-  Plus, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
+import {
+  Building2,
+  Smartphone,
+  Banknote,
+  Plus,
+  ArrowUpRight,
+  ArrowDownLeft,
   ArrowRightLeft,
   Loader2,
   BarChart3,
-  Sparkles
+  Sparkles,
+  Eye,
+  EyeOff,
+  Edit2,
+  Trash2
 } from 'lucide-react';
 import { TransactionModal } from '@/components/modals/transaction-modal';
-import { 
-  LeatherWalletIllustration, 
-  BankBuildingIllustration, 
-  SmartphoneIllustration, 
-  CashStackIllustration 
+import { EditTransactionModal } from '@/components/modals/edit-transaction-modal';
+import { ConfirmDeleteModal } from '@/components/modals/confirm-delete-modal';
+import {
+  LeatherWalletIllustration,
+  BankBuildingIllustration,
+  SmartphoneIllustration,
+  CashStackIllustration
 } from '@/components/ui/3d-illustrations';
 
 export default function DashboardPage() {
@@ -33,7 +38,65 @@ export default function DashboardPage() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<PersonalTransaction[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Modals state
   const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<PersonalTransaction | null>(null);
+  const [deletingTransaction, setDeletingTransaction] = useState<PersonalTransaction | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Independent Eye Toggles for 4 Money Categories (Persisted in localStorage)
+  const [showNetWorth, setShowNetWorth] = useState(true);
+  const [showBank, setShowBank] = useState(true);
+  const [showEWallet, setShowEWallet] = useState(true);
+  const [showCash, setShowCash] = useState(true);
+
+  // Load eye toggle preferences from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedNW = localStorage.getItem('hide_nw');
+      const savedBank = localStorage.getItem('hide_bank');
+      const savedEWallet = localStorage.getItem('hide_ewallet');
+      const savedCash = localStorage.getItem('hide_cash');
+
+      if (savedNW !== null) setShowNetWorth(savedNW === 'false');
+      if (savedBank !== null) setShowBank(savedBank === 'false');
+      if (savedEWallet !== null) setShowEWallet(savedEWallet === 'false');
+      if (savedCash !== null) setShowCash(savedCash === 'false');
+    }
+  }, []);
+
+  const toggleNetWorth = () => {
+    setShowNetWorth((prev) => {
+      const next = !prev;
+      localStorage.setItem('hide_nw', (!next).toString());
+      return next;
+    });
+  };
+
+  const toggleBank = () => {
+    setShowBank((prev) => {
+      const next = !prev;
+      localStorage.setItem('hide_bank', (!next).toString());
+      return next;
+    });
+  };
+
+  const toggleEWallet = () => {
+    setShowEWallet((prev) => {
+      const next = !prev;
+      localStorage.setItem('hide_ewallet', (!next).toString());
+      return next;
+    });
+  };
+
+  const toggleCash = () => {
+    setShowCash((prev) => {
+      const next = !prev;
+      localStorage.setItem('hide_cash', (!next).toString());
+      return next;
+    });
+  };
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -48,7 +111,7 @@ export default function DashboardPage() {
       .eq('is_active', true)
       .order('name');
 
-    // Fetch Recent Personal Transactions
+    // Fetch Recent Personal Transactions (Limit 3)
     const { data: txData } = await supabase
       .from('personal_transactions')
       .select(`
@@ -58,7 +121,7 @@ export default function DashboardPage() {
       `)
       .eq('user_id', user.id)
       .order('date', { ascending: false })
-      .limit(10);
+      .limit(3);
 
     if (walletData) setWallets(walletData);
     if (txData) setRecentTransactions(txData as any);
@@ -69,11 +132,32 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, []);
 
+  const handleDeleteConfirm = async () => {
+    if (!deletingTransaction) return;
+    setIsDeleting(true);
+
+    try {
+      const { error } = await supabase
+        .from('personal_transactions')
+        .delete()
+        .eq('id', deletingTransaction.id);
+
+      if (error) throw error;
+
+      setDeletingTransaction(null);
+      fetchDashboardData();
+    } catch (err: any) {
+      alert(err.message || 'Gagal menghapus transaksi.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   // Aggregation Math
   const netWorth = wallets.reduce((acc, w) => acc + Number(w.balance), 0);
-  const totalBank = wallets.filter(w => w.type === 'bank').reduce((acc, w) => acc + Number(w.balance), 0);
-  const totalEWallet = wallets.filter(w => w.type === 'ewallet').reduce((acc, w) => acc + Number(w.balance), 0);
-  const totalCash = wallets.filter(w => w.type === 'cash').reduce((acc, w) => acc + Number(w.balance), 0);
+  const totalBank = wallets.filter((w) => w.type === 'bank').reduce((acc, w) => acc + Number(w.balance), 0);
+  const totalEWallet = wallets.filter((w) => w.type === 'ewallet').reduce((acc, w) => acc + Number(w.balance), 0);
+  const totalCash = wallets.filter((w) => w.type === 'cash').reduce((acc, w) => acc + Number(w.balance), 0);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-24 md:pb-8">
@@ -84,7 +168,9 @@ export default function DashboardPage() {
             Dashboard Keuangan
             <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Pantau total kekayaan bersih (Net Worth) dan arus kas real-time anda.</p>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+            Pantau total kekayaan bersih (Net Worth) dan arus kas real-time anda.
+          </p>
         </div>
 
         <div className="grid grid-cols-2 sm:flex items-center gap-2.5 w-full sm:w-auto">
@@ -105,27 +191,33 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Transaction Modal Popup */}
-      <TransactionModal
-        isOpen={showTransactionModal}
-        onClose={() => setShowTransactionModal(false)}
-        onSuccess={fetchDashboardData}
-      />
-
       {loading ? (
         <div className="flex items-center justify-center py-24">
           <Loader2 className="w-9 h-9 text-emerald-500 animate-spin" />
         </div>
       ) : (
         <>
-          {/* Net Worth Summary Card (Matching Mockup Image) */}
+          {/* Net Worth Summary Card (1. Total Net Worth) */}
           <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-900/95 to-slate-950 border-t border-slate-700/70 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl space-y-4">
             <div className="relative z-10 max-w-xl space-y-3">
-              <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 rounded-full inline-block">
-                TOTAL NET WORTH
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 rounded-full inline-block">
+                  TOTAL NET WORTH
+                </span>
+
+                {/* Independent Eye Toggle 1: Net Worth */}
+                <button
+                  onClick={toggleNetWorth}
+                  type="button"
+                  className="p-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition border border-slate-700/60"
+                  title={showNetWorth ? 'Sembunyikan Saldo' : 'Tampilkan Saldo'}
+                >
+                  {showNetWorth ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4 text-emerald-400" />}
+                </button>
+              </div>
+
               <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight break-words drop-shadow-md">
-                {formatRupiah(netWorth)}
+                {showNetWorth ? formatRupiah(netWorth) : 'Rp •••••••••'}
               </h2>
               <p className="text-xs sm:text-sm text-slate-400 pt-1">
                 Terkonsolidasi dari <span className="text-slate-200 font-bold">{wallets.length} akun dompet</span> aktif.
@@ -138,35 +230,63 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Wallet Type Breakdown (Brushed Platinum Metallic Cards matching mockup) */}
+          {/* Wallet Type Breakdown (2. Rekening Bank, 3. E-Wallet, 4. Cash / Tunai) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <div className="bg-gradient-to-b from-slate-800/90 via-slate-900/90 to-slate-950 border-t border-slate-700/60 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden group hover:border-blue-500/40 transition">
+            {/* Card 2: Rekening Bank */}
+            <div className="bg-gradient-to-b from-slate-800/90 via-slate-900/90 to-slate-950 border-t border-slate-700/60 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden group hover:border-blue-500/40 transition space-y-2">
               <div className="flex items-center justify-between text-blue-400">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">REKENING BANK</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">REKENING BANK</span>
+                  {/* Independent Eye Toggle 2: Bank */}
+                  <button
+                    onClick={toggleBank}
+                    type="button"
+                    className="p-1 text-slate-400 hover:text-white rounded-lg transition"
+                    title={showBank ? 'Sembunyikan Saldo Bank' : 'Tampilkan Saldo Bank'}
+                  >
+                    {showBank ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5 text-blue-400" />}
+                  </button>
+                </div>
                 <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
                   <Building2 className="w-5 h-5 text-blue-400" />
                 </div>
               </div>
-              <p className="text-2xl font-black text-white tracking-tight mt-3 break-words">{formatRupiah(totalBank)}</p>
+              <p className="text-2xl font-black text-white tracking-tight mt-3 break-words">
+                {showBank ? formatRupiah(totalBank) : 'Rp ••••••••'}
+              </p>
               <div className="text-xs font-medium text-slate-400 mt-1">
-                {wallets.filter(w => w.type === 'bank').length} Akun Bank
+                {wallets.filter((w) => w.type === 'bank').length} Akun Bank
               </div>
-              
+
               <div className="absolute right-2 -bottom-2 opacity-30 group-hover:opacity-60 transition-opacity pointer-events-none">
                 <BankBuildingIllustration className="w-20 h-20" />
               </div>
             </div>
 
-            <div className="bg-gradient-to-b from-slate-800/90 via-slate-900/90 to-slate-950 border-t border-slate-700/60 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden group hover:border-indigo-500/40 transition">
+            {/* Card 3: E-Wallet */}
+            <div className="bg-gradient-to-b from-slate-800/90 via-slate-900/90 to-slate-950 border-t border-slate-700/60 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden group hover:border-indigo-500/40 transition space-y-2">
               <div className="flex items-center justify-between text-indigo-400">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">E-WALLET</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">E-WALLET</span>
+                  {/* Independent Eye Toggle 3: E-Wallet */}
+                  <button
+                    onClick={toggleEWallet}
+                    type="button"
+                    className="p-1 text-slate-400 hover:text-white rounded-lg transition"
+                    title={showEWallet ? 'Sembunyikan Saldo E-Wallet' : 'Tampilkan Saldo E-Wallet'}
+                  >
+                    {showEWallet ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5 text-indigo-400" />}
+                  </button>
+                </div>
                 <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl">
                   <Smartphone className="w-5 h-5 text-indigo-400" />
                 </div>
               </div>
-              <p className="text-2xl font-black text-white tracking-tight mt-3 break-words">{formatRupiah(totalEWallet)}</p>
+              <p className="text-2xl font-black text-white tracking-tight mt-3 break-words">
+                {showEWallet ? formatRupiah(totalEWallet) : 'Rp ••••••••'}
+              </p>
               <div className="text-xs font-medium text-slate-400 mt-1">
-                {wallets.filter(w => w.type === 'ewallet').length} Akun E-Wallet
+                {wallets.filter((w) => w.type === 'ewallet').length} Akun E-Wallet
               </div>
 
               <div className="absolute right-2 -bottom-2 opacity-30 group-hover:opacity-60 transition-opacity pointer-events-none">
@@ -174,16 +294,30 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-b from-slate-800/90 via-slate-900/90 to-slate-950 border-t border-slate-700/60 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden group hover:border-emerald-500/40 transition">
+            {/* Card 4: Cash / Tunai */}
+            <div className="bg-gradient-to-b from-slate-800/90 via-slate-900/90 to-slate-950 border-t border-slate-700/60 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden group hover:border-emerald-500/40 transition space-y-2">
               <div className="flex items-center justify-between text-emerald-400">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">CASH / TUNAI</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">CASH / TUNAI</span>
+                  {/* Independent Eye Toggle 4: Cash */}
+                  <button
+                    onClick={toggleCash}
+                    type="button"
+                    className="p-1 text-slate-400 hover:text-white rounded-lg transition"
+                    title={showCash ? 'Sembunyikan Saldo Cash' : 'Tampilkan Saldo Cash'}
+                  >
+                    {showCash ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5 text-emerald-400" />}
+                  </button>
+                </div>
                 <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
                   <Banknote className="w-5 h-5 text-emerald-400" />
                 </div>
               </div>
-              <p className="text-2xl font-black text-white tracking-tight mt-3 break-words">{formatRupiah(totalCash)}</p>
+              <p className="text-2xl font-black text-white tracking-tight mt-3 break-words">
+                {showCash ? formatRupiah(totalCash) : 'Rp ••••••••'}
+              </p>
               <div className="text-xs font-medium text-slate-400 mt-1">
-                {wallets.filter(w => w.type === 'cash').length} Akun Tunai
+                {wallets.filter((w) => w.type === 'cash').length} Akun Tunai
               </div>
 
               <div className="absolute right-2 -bottom-2 opacity-30 group-hover:opacity-60 transition-opacity pointer-events-none">
@@ -192,27 +326,42 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Rincian Riwayat Transaksi Terakhir */}
+          {/* Riwayat Transaksi Terakhir (Limited to 3 newest items) */}
           <div className="bg-gradient-to-b from-slate-800/90 via-slate-900/95 to-slate-950 border-t border-slate-700/70 border-b border-slate-950 border-x border-slate-800/80 rounded-3xl p-5 sm:p-7 md:p-8 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">Riwayat Transaksi Terakhir</h3>
-              <Link href="/reports" className="text-xs text-emerald-400 hover:underline font-bold flex items-center gap-1">
-                Lihat Laporan Lengkap ➔
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                  Riwayat Transaksi Terakhir
+                </h3>
+              </div>
+              <Link
+                href="/transactions"
+                className="text-xs text-emerald-400 hover:underline font-bold flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl hover:bg-emerald-500/20 transition"
+              >
+                Lihat Riwayat Lengkap ➔
               </Link>
             </div>
 
             {recentTransactions.length === 0 ? (
-              <p className="text-sm text-slate-500 py-6 text-center">Belum ada catatan transaksi. Klik "Catat Transaksi" untuk memulai.</p>
+              <p className="text-sm text-slate-500 py-6 text-center">
+                Belum ada catatan transaksi. Klik "Catat Transaksi" untuk memulai.
+              </p>
             ) : (
               <div className="divide-y divide-slate-800/80">
                 {recentTransactions.map((tx) => (
-                  <div key={tx.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-800/40 px-3 rounded-2xl transition">
+                  <div
+                    key={tx.id}
+                    className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-800/40 px-3 rounded-2xl transition group"
+                  >
                     <div className="flex items-center gap-3.5">
-                      <div className={`p-2.5 rounded-2xl shrink-0 ${
-                        tx.type === 'income' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                        tx.type === 'expense' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
-                        'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                      }`}>
+                      <div
+                        className={`p-2.5 rounded-2xl shrink-0 ${tx.type === 'income'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          : tx.type === 'expense'
+                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                            : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                          }`}
+                      >
                         {tx.type === 'income' && <ArrowDownLeft className="w-4 h-4" />}
                         {tx.type === 'expense' && <ArrowUpRight className="w-4 h-4" />}
                         {tx.type === 'transfer' && <ArrowRightLeft className="w-4 h-4" />}
@@ -220,7 +369,7 @@ export default function DashboardPage() {
                       <div className="min-w-0 flex-1">
                         <p className="font-bold text-slate-100 text-sm truncate">{tx.category}</p>
                         <p className="text-xs text-slate-400 truncate">
-                          {tx.type === 'transfer' 
+                          {tx.type === 'transfer'
                             ? `${tx.wallet?.name} ➔ ${tx.to_wallet?.name}`
                             : tx.wallet?.name}
                           {tx.notes ? ` • "${tx.notes}"` : ''}
@@ -228,18 +377,46 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    <div className="flex sm:flex-col justify-between items-baseline sm:items-end border-t border-slate-800/40 sm:border-0 pt-1.5 sm:pt-0 pl-11 sm:pl-0">
-                      <p className={`font-black text-sm sm:text-base ${
-                        tx.type === 'income' ? 'text-emerald-400' :
-                        tx.type === 'expense' ? 'text-rose-400' :
-                        'text-slate-300'
-                      }`}>
-                        {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
-                        {formatRupiah(Number(tx.amount))}
-                      </p>
-                      <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
-                        {new Date(tx.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                      </p>
+                    <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-slate-800/40 sm:border-0 pt-1.5 sm:pt-0 pl-11 sm:pl-0">
+                      <div className="text-left sm:text-right">
+                        <p
+                          className={`font-black text-sm sm:text-base ${tx.type === 'income'
+                            ? 'text-emerald-400'
+                            : tx.type === 'expense'
+                              ? 'text-rose-400'
+                              : 'text-slate-300'
+                            }`}
+                        >
+                          {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
+                          {formatRupiah(Number(tx.amount))}
+                        </p>
+                        <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
+                          {new Date(tx.date).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
+                      </div>
+
+                      {/* Edit & Delete Action Buttons */}
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setEditingTransaction(tx)}
+                          className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition"
+                          title="Edit Transaksi"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeletingTransaction(tx)}
+                          className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
+                          title="Hapus Transaksi"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -248,6 +425,30 @@ export default function DashboardPage() {
           </div>
         </>
       )}
+
+      {/* Add Transaction Modal */}
+      <TransactionModal
+        isOpen={showTransactionModal}
+        onClose={() => setShowTransactionModal(false)}
+        onSuccess={fetchDashboardData}
+      />
+
+      {/* Edit Transaction Modal */}
+      <EditTransactionModal
+        isOpen={!!editingTransaction}
+        transaction={editingTransaction}
+        onClose={() => setEditingTransaction(null)}
+        onSuccess={fetchDashboardData}
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!deletingTransaction}
+        transaction={deletingTransaction}
+        onClose={() => setDeletingTransaction(null)}
+        onConfirm={handleDeleteConfirm}
+        loading={isDeleting}
+      />
     </div>
   );
 }
