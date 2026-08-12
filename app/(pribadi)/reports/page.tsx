@@ -133,7 +133,8 @@ export default function ReportsPage() {
 
   const activeDays = Object.entries(dailyMap)
     .filter(([_, data]) => data.txs.length > 0)
-    .map(([day, data]) => ({ day: Number(day), ...data }));
+    .map(([day, data]) => ({ day: Number(day), ...data }))
+    .sort((a, b) => b.day - a.day);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-24 md:pb-8">
@@ -300,9 +301,9 @@ export default function ReportsPage() {
               <div className="flex items-center justify-between border-b border-slate-800 pb-3.5">
                 <h3 className="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-emerald-400 shrink-0" />
-                  <span>Cash Flow</span>
+                  <span>Cash Flow (Arus Kas)</span>
                 </h3>
-                <span className="text-[11px] text-slate-400 font-medium">Legenda & Persentase</span>
+                <span className="text-[11px] text-slate-400 font-medium">Urutan Terbaru • Scroll Untuk Lainnya</span>
               </div>
 
               {activeDays.length === 0 ? (
@@ -314,7 +315,7 @@ export default function ReportsPage() {
                   <p className="text-slate-400 text-xs">Belum ada riwayat transaksi pada bulan {monthName}.</p>
                 </div>
               ) : (
-                <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
+                <div className="space-y-3.5 max-h-[350px] overflow-y-auto pr-1">
                   {activeDays.map(({ day, income, expense, txs }) => {
                     const dayDate = new Date(year, month, day).toLocaleDateString('id-ID', {
                       weekday: 'long',
