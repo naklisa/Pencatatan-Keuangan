@@ -21,7 +21,8 @@ import {
   Eye,
   EyeOff,
   Edit2,
-  Trash2
+  Trash2,
+  Send
 } from 'lucide-react';
 import { TransactionModal } from '@/components/modals/transaction-modal';
 import { EditTransactionModal } from '@/components/modals/edit-transaction-modal';
@@ -98,10 +99,27 @@ export default function DashboardPage() {
     });
   };
 
+  // Telegram pairing state
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [isTelegramConnected, setIsTelegramConnected] = useState<boolean>(false);
+
   const fetchDashboardData = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    setCurrentUserId(user.id);
+
+    // Fetch user profile to check telegram_chat_id
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('telegram_chat_id')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.telegram_chat_id) {
+      setIsTelegramConnected(true);
+    }
 
     // Fetch User Wallets
     const { data: walletData } = await supabase
@@ -174,6 +192,21 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-2 sm:flex items-center gap-2.5 w-full sm:w-auto">
+          <a
+            href={`https://t.me/DuidNa_bot?start=${currentUserId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`flex items-center justify-center gap-2 px-4 py-2.5 border text-xs sm:text-sm font-bold rounded-2xl transition-all shadow-md text-center ${
+              isTelegramConnected
+                ? 'bg-sky-500/10 border-sky-500/30 text-sky-400 hover:bg-sky-500/20'
+                : 'bg-sky-600 hover:bg-sky-500 text-white border-sky-500 font-extrabold shadow-sky-600/25 hover:scale-[1.02]'
+            }`}
+            title={isTelegramConnected ? 'Telegram Bot Terhubung (@DuidNa_bot)' : 'Hubungkan Telegram Bot (@DuidNa_bot)'}
+          >
+            <Send className="w-4 h-4 shrink-0 text-sky-300" />
+            <span>{isTelegramConnected ? 'Telegram Terhubung' : 'Bot Telegram'}</span>
+          </a>
+
           <Link
             href="/reports"
             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900/90 border border-slate-700/80 hover:bg-slate-800 text-slate-200 text-xs sm:text-sm font-bold rounded-2xl transition-all shadow-md text-center"

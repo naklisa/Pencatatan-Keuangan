@@ -14,6 +14,7 @@ export interface Profile {
   full_name: string;
   avatar_url?: string | null;
   phone_number?: string | null;
+  telegram_chat_id?: string | null;
   updated_at: string;
   created_at: string;
 }
