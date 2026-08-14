@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navigation } from "@/components/layout/navigation";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "Pencatatan Keuangan Pribadi",
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
         <Navigation />
         <main>{children}</main>
+        <SpeedInsights />
       </body>
     </html>
   );
